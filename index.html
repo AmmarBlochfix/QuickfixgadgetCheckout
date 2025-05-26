@@ -1,80 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pay Now - Checkout</title>
+  <title>Custom Checkout</title>
   <style>
-    body {
-      <body>
-  <div style="text-align:center; margin-top: 50px;">
-    <h1>Checkout Page</h1>
-    <h2 id="product-name">Loading product...</h2>
-    <p id="product-price"></p>
-  </div>
-
-  <!-- This script will read URL parameters and insert product info -->
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const name = params.get("name");
-    const price = params.get("price");
-
-    if (name && price) {
-      document.getElementById("product-name").textContent = name;
-      document.getElementById("product-price").textContent = "$" + price;
-    } else {
-      document.getElementById("product-name").textContent = "Product not found";
-      document.getElementById("product-price").textContent = "";
-    }
-  </script>
-</body>
-
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    h1 {
-      margin-bottom: 24px;
-    }
-    .product-info {
-      margin-bottom: 30px;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      padding: 15px 30px;
-      font-size: 18px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #218838;
-    }
+    body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
+    .product { margin-bottom: 10px; }
+    .btn { padding: 10px; background: #4caf50; color: white; border: none; margin-top: 20px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Checkout</h1>
-  
-  <div class="product-info">
-    <h2>Product Name</h2>
-    <p>Awesome product description goes here.</p>
-    <p><strong>Price: $XX.XX</strong></p>
-  </div>
 
-  <button id="payNowBtn">Pay Now</button>
+  <h2>Checkout</h2>
+  <div id="productList"></div>
+  <p><strong>Total:</strong> $<span id="totalAmount">0.00</span></p>
+
+  <button class="btn" onclick="payNow()">Pay with Crypto (NOWPayments)</button>
 
   <script>
-    document.getElementById('payNowBtn').addEventListener('click', () => {
-      // Replace the URL below with your actual NOWPayments invoice link
-      window.location.href = "https://pay.nowpayments.io/invoice/YOUR_INVOICE_ID";
+    const urlParams = new URLSearchParams(window.location.search);
+    const products = JSON.parse(urlParams.get('products') || '[]');
+    const total = urlParams.get('total') || '0.00';
+
+    const list = document.getElementById('productList');
+    products.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'product';
+      div.innerText = `${p.quantity} x ${p.title} — $${p.price.toFixed(2)}`;
+      list.appendChild(div);
     });
+
+    document.getElementById('totalAmount').textContent = parseFloat(total).toFixed(2);
+
+    function payNow() {
+      // Replace with your actual NOWPayments invoice creation link
+      window.location.href = `https://nowpayments.io/payment?amount=${total}&currency=usd&iid=YOUR_INVOICE_ID`;
+    }
   </script>
+
 </body>
 </html>
