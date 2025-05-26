@@ -6,6 +6,29 @@
   <title>Pay Now - Checkout</title>
   <style>
     body {
+      <body>
+  <div style="text-align:center; margin-top: 50px;">
+    <h1>Checkout Page</h1>
+    <h2 id="product-name">Loading product...</h2>
+    <p id="product-price"></p>
+  </div>
+
+  <!-- This script will read URL parameters and insert product info -->
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name");
+    const price = params.get("price");
+
+    if (name && price) {
+      document.getElementById("product-name").textContent = name;
+      document.getElementById("product-price").textContent = "$" + price;
+    } else {
+      document.getElementById("product-name").textContent = "Product not found";
+      document.getElementById("product-price").textContent = "";
+    }
+  </script>
+</body>
+
       font-family: Arial, sans-serif;
       max-width: 500px;
       margin: 50px auto;
