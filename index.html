@@ -1,82 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pay Now - Checkout</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    h1 {
-      margin-bottom: 24px;
-    }
-    .product-info {
-      margin-bottom: 30px;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      padding: 15px 30px;
-      font-size: 18px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #218838;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>QuickFix Gadget Checkout</title>
 </head>
 <body>
-  <h1>Checkout</h1>
-  
-  <div class="product-info">
-    <h2>Product Name</h2>
-    <p>Awesome product description goes here.</p>
-    <p><strong>Price: $XX.XX</strong></p>
-  </div>
+  <h1>Checkout Page</h1>
 
-  <button id="payNowBtn">Pay Now</button>
+  <p><strong>Product Name:</strong> <span id="product-name">Loading...</span></p>
+  <p><strong>Price:</strong> <span id="product-price">Loading...</span></p>
 
   <script>
-    document.getElementById('payNowBtn').addEventListener('click', () => {
-      // Replace the URL below with your actual NOWPayments invoice link
-      window.location.href = "https://pay.nowpayments.io/invoice/YOUR_INVOICE_ID";
-    });
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name');
+    const price = params.get('price');
+
+    // Insert into the page
+    document.getElementById('product-name').textContent = decodeURIComponent(name || 'N/A');
+    document.getElementById('product-price').textContent = `$${decodeURIComponent(price || '0.00')}`;
   </script>
 </body>
 </html>
-<script>
-  function getProductsFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const productsJson = params.get('products');
-    if (!productsJson) return [];
-
-    try {
-      return JSON.parse(decodeURIComponent(productsJson));
-    } catch (e) {
-      return [];
-    }
-  }
-
-  const products = getProductsFromUrl();
-
-  // Now you can loop over products array to display product info and calculate totals
-  let total = 0;
-  products.forEach(p => {
-    // example: display product title and price
-    document.write(`<p>${p.title} x${p.quantity} - $${p.price}</p>`);
-    total += parseFloat(p.price) * parseInt(p.quantity);
-  });
-
-  document.write(`<h3>Total: $${total.toFixed(2)}</h3>`);
-</script>
