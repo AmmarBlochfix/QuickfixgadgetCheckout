@@ -1,23 +1,99 @@
 <!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>QuickFix Gadget Checkout</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .product-details, .checkout-form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .checkout-form input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .checkout-form button {
+      background: #007BFF;
+      color: white;
+      padding: 15px;
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .checkout-form button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
-  <h1>Checkout Page</h1>
+  <h1>QuickFix Gadget Checkout</h1>
 
-  <p><strong>Product Name:</strong> <span id="product-name">Loading...</span></p>
-  <p><strong>Price:</strong> <span id="product-price">Loading...</span></p>
+  <div class="product-details">
+    <p><strong>Product:</strong> <span id="product-name">Loading...</span></p>
+    <p><strong>Price:</strong> <span id="product-price">Loading...</span></p>
+  </div>
+
+  <form class="checkout-form" onsubmit="handleSubmit(event)">
+    <label for="customer-name">Full Name</label>
+    <input type="text" id="customer-name" name="customer-name" required>
+
+    <label for="customer-email">Email</label>
+    <input type="email" id="customer-email" name="customer-email" required>
+
+    <label for="customer-phone">Phone Number</label>
+    <input type="tel" id="customer-phone" name="customer-phone" required>
+
+    <button type="submit">Pay Now</button>
+  </form>
 
   <script>
+    // Get product info from URL
     const params = new URLSearchParams(window.location.search);
     const name = params.get('name');
     const price = params.get('price');
 
-    // Insert into the page
-    document.getElementById('product-name').textContent = decodeURIComponent(name || 'N/A');
+    document.getElementById('product-name').textContent = decodeURIComponent(name || 'Unknown Product');
     document.getElementById('product-price').textContent = `$${decodeURIComponent(price || '0.00')}`;
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      const customerName = document.getElementById('customer-name').value;
+      const customerEmail = document.getElementById('customer-email').value;
+      const customerPhone = document.getElementById('customer-phone').value;
+
+      // For now, just show data in an alert
+      alert(
+        `Order Summary:\n\nProduct: ${decodeURIComponent(name)}\nPrice: $${decodeURIComponent(price)}\n\nName: ${customerName}\nEmail: ${customerEmail}\nPhone: ${customerPhone}`
+      );
+
+      // In future: send to a backend, Google Sheet, Stripe, etc.
+    }
   </script>
 </body>
 </html>
