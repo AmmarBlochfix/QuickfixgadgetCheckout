@@ -94,7 +94,7 @@
       const email = document.getElementById('customer-email').value;
       const phone = document.getElementById('customer-phone').value;
 
-      const apiKey = 'YOUR_NOWPAYMENTS_API_KEY'; // 🛠 Replace with your NOWPayments key
+      const apiKey = 'HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN'; // 🛠 Replace with your NOWPayments key
       const orderId = Math.random().toString(36).substring(2, 10);
 
       const data = {
@@ -137,7 +137,7 @@
         return;
       }
 
-      const publicKey = 'YOUR_NOWCHARGE_PUBLIC_KEY'; // 🛠 Replace with your NowCharge public key
+      const publicKey = 'e6baaa9b37330e33ca5b4378b5a75c3f202f5bbe3c2201c64fe49ad2ab559435'; // 🛠 Replace with your NowCharge public key
       const orderId = Math.random().toString(36).substring(2, 12);
 
       const url = `https://nowcharge.io/checkout?public_key=${publicKey}&amount=${productPrice}&currency=USD&order_id=${orderId}&customer_email=${encodeURIComponent(email)}&customer_name=${encodeURIComponent(name)}&description=${encodeURIComponent(productName)}`;
