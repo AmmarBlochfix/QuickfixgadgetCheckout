@@ -94,13 +94,13 @@
       const email = document.getElementById('customer-email').value;
       const phone = document.getElementById('customer-phone').value;
 
-      const apiKey = 'HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN'; // 🛠 Replace with your NOWPayments key
+      const apiKey = 'HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN'; // 🛠 Replace with your NOWPayments API key
       const orderId = Math.random().toString(36).substring(2, 10);
 
       const data = {
         price_amount: parseFloat(productPrice),
         price_currency: "usd",
-        pay_currency: "btc", // Optional: You can let users select the crypto
+        pay_currency: "btc", // Optional: you can allow user to select or keep as btc
         order_id: orderId,
         order_description: `${productName} for ${name}`,
         success_url: "https://yourstore.com/success",  // Optional
@@ -126,7 +126,7 @@
       }
     }
 
-    // NowCharge (Visa / Mastercard)
+    // ChangeNOW (Card payment)
     document.getElementById('pay-card').addEventListener('click', () => {
       const name = document.getElementById('customer-name').value;
       const email = document.getElementById('customer-email').value;
@@ -137,10 +137,11 @@
         return;
       }
 
-      const publicKey = 'e6baaa9b37330e33ca5b4378b5a75c3f202f5bbe3c2201c64fe49ad2ab559435'; // 🛠 Replace with your NowCharge public key
+      const publicKey = 'e6baaa9b37330e33ca5b4378b5a75c3f202f5bbe3c2201c64fe49ad2ab559435'; // 🛠 Replace with your ChangeNOW public key if available
       const orderId = Math.random().toString(36).substring(2, 12);
 
-      const url = `https://nowcharge.io/checkout?public_key=${publicKey}&amount=${productPrice}&currency=USD&order_id=${orderId}&customer_email=${encodeURIComponent(email)}&customer_name=${encodeURIComponent(name)}&description=${encodeURIComponent(productName)}`;
+      // Example URL — confirm with ChangeNOW docs for correct payment link
+      const url = `https://changenow.io/checkout?public_key=${publicKey}&amount=${productPrice}&currency=USD&order_id=${orderId}&customer_email=${encodeURIComponent(email)}&customer_name=${encodeURIComponent(name)}&description=${encodeURIComponent(productName)}`;
 
       window.location.href = url;
     });
@@ -148,6 +149,3 @@
 </body>
 </html>
 
-  </script>
-</body>
-</html>
