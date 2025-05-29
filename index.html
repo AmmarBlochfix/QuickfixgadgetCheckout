@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -12,12 +11,10 @@
       max-width: 600px;
       margin: auto;
     }
-
     h1 {
       text-align: center;
       color: #333;
     }
-
     .product-details, .checkout-form {
       background: #fff;
       padding: 20px;
@@ -25,7 +22,6 @@
       margin-top: 20px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     .checkout-form input {
       width: 100%;
       padding: 10px;
@@ -34,7 +30,6 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-
     .checkout-form button {
       background: #007BFF;
       color: white;
@@ -45,101 +40,66 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     .checkout-form button:hover {
       background: #0056b3;
+    }
+    .or-divider {
+      text-align: center;
+      margin: 20px 0;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <h1>QuickFix Gadget Checkout</h1>
-
   <div class="product-details">
     <p><strong>Product:</strong> <span id="product-name">Loading...</span></p>
     <p><strong>Price:</strong> <span id="product-price">Loading...</span></p>
   </div>
 
-  <form class="checkout-form" onsubmit="handleSubmit(event)">
+  <form class="checkout-form" id="cryptoForm">
     <label for="customer-name">Full Name</label>
-    <input type="text" id="customer-name" name="customer-name" required>
+    <input type="text" id="customer-name" required>
 
     <label for="customer-email">Email</label>
-    <input type="email" id="customer-email" name="customer-email" required>
+    <input type="email" id="customer-email" required>
 
     <label for="customer-phone">Phone Number</label>
-    <input type="tel" id="customer-phone" name="customer-phone" required>
+    <input type="tel" id="customer-phone" required>
 
-    <button type="submit">Pay Now</button>
+    <button type="submit">Pay with Crypto</button>
+  </form>
+
+  <div class="or-divider">OR</div>
+
+  <form class="checkout-form" id="cardForm">
+    <button type="submit">Pay with MasterCard/Visa</button>
   </form>
 
   <script>
-    // Get product info from URL
     const params = new URLSearchParams(window.location.search);
-    const name = params.get('name');
-    const price = params.get('price');
+    const productName = decodeURIComponent(params.get('name') || 'Unknown Product');
+    const productPrice = decodeURIComponent(params.get('price') || '0.00');
 
-    document.getElementById('product-name').textContent = decodeURIComponent(name || 'Unknown Product');
-    document.getElementById('product-price').textContent = `$${decodeURIComponent(price || '0.00')}`;
+    document.getElementById('product-name').textContent = productName;
+    document.getElementById('product-price').textContent = `$${productPrice}`;
 
-    function handleSubmit(event) {
-      event.preventDefault();
-      const customerName = document.getElementById('customer-name').value;
-      const customerEmail = document.getElementById('customer-email').value;
-      const customerPhone = document.getElementById('customer-phone').value;
-
-      // For now, just show data in an alert
-      alert(
-        `Order Summary:\n\nProduct: ${decodeURIComponent(name)}\nPrice: $${decodeURIComponent(price)}\n\nName: ${customerName}\nEmail: ${customerEmail}\nPhone: ${customerPhone}`
-      );
-
-      // In future: send to a backend, Google Sheet, Stripe, etc.
-    }
-  </script
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Checkout</title>
-</head>
-<body>
-  <h1 id="productName"></h1>
-  <h2 id="productPrice"></h2>
-
-  <form id="customerForm">
-    <input type="text" id="customerName" placeholder="Your Name" required><br>
-    <input type="email" id="customerEmail" placeholder="Email" required><br>
-    <input type="tel" id="customerPhone" placeholder="Phone" required><br>
-    <button type="submit">Pay Now</button>
-  </form>
-
-  <script>
-    // Get product data from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const productName = urlParams.get('name') || "Unnamed Product";
-    const productPrice = urlParams.get('price') || "0.00";
-
-    document.getElementById('productName').textContent = `Product: ${productName}`;
-    document.getElementById('productPrice').textContent = `Price: $${productPrice}`;
-
-    document.getElementById('customerForm').addEventListener('submit', async (e) => {
+    // Crypto payment (NOWPayments)
+    document.getElementById('cryptoForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const name = document.getElementById('customer-name').value;
+      const email = document.getElementById('customer-email').value;
+      const phone = document.getElementById('customer-phone').value;
 
-      const name = document.getElementById('customerName').value;
-      const email = document.getElementById('customerEmail').value;
-      const phone = document.getElementById('customerPhone').value;
-
-      const amountUSD = parseFloat(productPrice);
-      const apiKey = 'HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN'; // Replace with your actual key
-
+      const apiKey = 'HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN';
       const data = {
-        price_amount: amountUSD,
+        price_amount: parseFloat(productPrice),
         price_currency: "usd",
-        pay_currency: "btc", // You can make this dynamic or let the user pick
+        pay_currency: "btc",
         order_id: Math.random().toString(36).substring(2, 10),
         order_description: `${productName} for ${name}`,
-        ipn_callback_url: "https://yourdomain.com/ipn", // optional
-        success_url: "https://yourstore.com/success",   // optional
-        cancel_url: "https://yourstore.com/cancel"      // optional
+        success_url: "https://yourstore.com/success",
+        cancel_url: "https://yourstore.com/cancel"
       };
 
       const response = await fetch('https://api.nowpayments.io/v1/invoice', {
@@ -152,17 +112,41 @@
       });
 
       const result = await response.json();
-
       if (result.invoice_url) {
         window.location.href = result.invoice_url;
       } else {
-        alert('Failed to create payment. Check your API key and data.');
+        alert('Failed to create crypto payment');
+      }
+    });
+
+    // Card payment (NOWCharge)
+    document.getElementById('cardForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const publicKey = 'e6baaa9b37330e33ca5b4378b5a75c3f202f5bbe3c2201c64fe49ad2ab559435';
+      const data = {
+        amount: parseFloat(productPrice),
+        currency: 'USD',
+        description: productName,
+        public_key: publicKey,
+        success_url: 'https://yourstore.com/success',
+        cancel_url: 'https://yourstore.com/cancel'
+      };
+
+      const response = await fetch('https://api.nowcharge.com/v1/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      if (result && result.payment_url) {
+        window.location.href = result.payment_url;
+      } else {
+        alert('Failed to create card payment');
         console.error(result);
       }
     });
   </script>
-</body>
-</html>
-
 </body>
 </html>
