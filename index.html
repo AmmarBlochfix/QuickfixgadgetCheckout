@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>QuickFix Gadget Checkout</title>
+  <title>SolveWithin Checkout</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -47,17 +47,21 @@
       background: green;
       margin-top: 10px;
     }
+    #card-container {
+      margin-bottom: 20px;
+    }
   </style>
+  <script src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
 </head>
 <body>
-  <h1>QuickFix Gadget Checkout</h1>
+  <h1>SolveWithin Checkout</h1>
 
   <div class="product-details">
     <p><strong>Product:</strong> <span id="product-name">Loading...</span></p>
     <p><strong>Price:</strong> <span id="product-price">Loading...</span></p>
   </div>
 
-  <form class="checkout-form" onsubmit="handleCryptoPayment(event)">
+  <form id="checkout-form" class="checkout-form" onsubmit="handleCryptoPayment(event)">
     <label for="customer-name">Full Name</label>
     <input type="text" id="customer-name" required />
 
@@ -67,19 +71,93 @@
     <label for="customer-phone">Phone Number</label>
     <input type="tel" id="customer-phone" required />
 
-    <button type="submit">Pay with Crypto</button>
+    <div id="card-container"></div>
+
     <button type="button" id="pay-card" class="pay-card-btn">Pay with Card (Visa / MasterCard)</button>
+    <button type="submit">Pay with Crypto</button>
   </form>
 
   <script>
+    // Replace these with your actual Square Application ID and Location ID
+    const applicationId = "sq0idp-pe0MAe3lCpW32Zjr7gyQfg";
+    const locationId = "EAAAl2ilQ72BsE7s_4EdG1O809qxvtzk9Pc7cVANWtwaFvDFmE5j8KevoIXVkmGi";
+
+    // Product info from URL params
     const params = new URLSearchParams(window.location.search);
     const productName = decodeURIComponent(params.get("name") || "Unknown Product");
-    const productPrice = decodeURIComponent(params.get("price") || "0.00");
+    const productPrice = parseFloat(decodeURIComponent(params.get("price") || "0.00"));
 
     document.getElementById("product-name").textContent = productName;
-    document.getElementById("product-price").textContent = `$${productPrice}`;
+    document.getElementById("product-price").textContent = `$${productPrice.toFixed(2)}`;
 
-    // NOWPayments (Crypto)
+    // Initialize Square payments
+    let payments;
+    let card;
+
+    async function initializeSquare() {
+      if (!window.Square) {
+        alert("Square.js failed to load properly.");
+        return;
+      }
+
+      payments = Square.payments(applicationId, locationId);
+
+      try {
+        card = await payments.card();
+        await card.attach("#card-container");
+      } catch (e) {
+        console.error("Initializing Card failed", e);
+      }
+    }
+
+    initializeSquare();
+
+    // Handle Card Payment
+    document.getElementById("pay-card").addEventListener("click", async function () {
+      const name = document.getElementById("customer-name").value;
+      const email = document.getElementById("customer-email").value;
+      const phone = document.getElementById("customer-phone").value;
+
+      if (!name || !email || !phone) {
+        alert("Please fill out all customer info.");
+        return;
+      }
+
+      try {
+        const tokenResult = await card.tokenize();
+        if (tokenResult.status === "OK") {
+          // Send the token and payment info to your backend to complete payment
+          const response = await fetch("/process-payment", {  // <- Your backend endpoint
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              sourceId: tokenResult.token,
+              amount: productPrice,
+              customerName: name,
+              customerEmail: email,
+              productName: productName
+            })
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            alert("Payment successful! Thank you.");
+            window.location.href = "/success"; // your success page
+          } else {
+            alert("Payment failed: " + (result.error || "Unknown error"));
+          }
+        } else {
+          alert("Card tokenization failed: " + tokenResult.errors[0].message);
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Payment error: " + e.message);
+      }
+    });
+
+    // NOWPayments Crypto Payment (Same as before)
     async function handleCryptoPayment(event) {
       event.preventDefault();
 
@@ -87,26 +165,26 @@
       const email = document.getElementById("customer-email").value;
       const phone = document.getElementById("customer-phone").value;
 
-      const apiKey = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN"; // 🛠 Replace with your NOWPayments API key
+      const apiKey = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN"; // Your NOWPayments API key
       const orderId = Math.random().toString(36).substring(2, 10);
 
       const data = {
-        price_amount: parseFloat(productPrice),
+        price_amount: productPrice,
         price_currency: "usd",
         pay_currency: "btc",
         order_id: orderId,
         order_description: `${productName} for ${name}`,
         success_url: "https://yourstore.com/success",
-        cancel_url: "https://yourstore.com/cancel"
+        cancel_url: "https://yourstore.com/cancel",
       };
 
       const response = await fetch("https://api.nowpayments.io/v1/invoice", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey
+          "x-api-key": apiKey,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
@@ -118,67 +196,6 @@
         console.error(result);
       }
     }
-
-    // Square Card Payment
-    document.getElementById("pay-card").addEventListener("click", async () => {
-      const name = document.getElementById("customer-name").value;
-      const email = document.getElementById("customer-email").value;
-
-      if (!name || !email) {
-        alert("Please fill out all customer info.");
-        return;
-      }
-
-      const SQUARE_ACCESS_TOKEN = "EAAAl2-uvdIv-3VRkNuJQnPyPbT3RRuoWnBKTvAQ33E8MR-PY5BAQbzlnjJ8SEnr"; // 🛠 Replace this
-      const LOCATION_ID = "sq0idp-pe0MAe3lCpW32Zjr7gyQfg";                      // 🛠 Replace this
-
-      const orderId = Math.random().toString(36).substring(2, 10);
-
-      const paymentData = {
-        idempotency_key: orderId,
-        order: {
-          location_id: LOCATION_ID,
-          line_items: [
-            {
-              name: productName,
-              quantity: "1",
-              base_price_money: {
-                amount: Math.round(parseFloat(productPrice) * 100), // in cents
-                currency: "USD"
-              }
-            }
-          ]
-        },
-        checkout_options: {
-          redirect_url: "https://yourstore.com/success"
-        }
-      };
-
-      try {
-        const response = await fetch("https://connect.squareup.com/v2/online-checkout/payment-links", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${SQUARE_ACCESS_TOKEN}`,
-            "Accept": "application/json"
-          },
-          body: JSON.stringify(paymentData)
-        });
-
-        const result = await response.json();
-
-        if (result.payment_link && result.payment_link.url) {
-          window.location.href = result.payment_link.url;
-        } else {
-          alert("Card Payment Failed. Check credentials and setup.");
-          console.error(result);
-        }
-      } catch (error) {
-        console.error("Error creating Square payment link:", error);
-        alert("Error connecting to Square API.");
-      }
-    });
   </script>
 </body>
 </html>
-
