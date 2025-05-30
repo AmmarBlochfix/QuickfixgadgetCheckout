@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>QuickFix Gadget Checkout</title>
   <style>
     body {
@@ -11,12 +11,10 @@
       max-width: 600px;
       margin: auto;
     }
-
     h1 {
       text-align: center;
       color: #333;
     }
-
     .product-details, .checkout-form {
       background: #fff;
       padding: 20px;
@@ -24,7 +22,6 @@
       margin-top: 20px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     .checkout-form input {
       width: 100%;
       padding: 10px;
@@ -33,7 +30,6 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-
     .checkout-form button {
       background: #007BFF;
       color: white;
@@ -44,11 +40,9 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     .checkout-form button:hover {
       background: #0056b3;
     }
-
     .pay-card-btn {
       background: green;
       margin-top: 10px;
@@ -65,13 +59,13 @@
 
   <form class="checkout-form" onsubmit="handleCryptoPayment(event)">
     <label for="customer-name">Full Name</label>
-    <input type="text" id="customer-name" required>
+    <input type="text" id="customer-name" required />
 
     <label for="customer-email">Email</label>
-    <input type="email" id="customer-email" required>
+    <input type="email" id="customer-email" required />
 
     <label for="customer-phone">Phone Number</label>
-    <input type="tel" id="customer-phone" required>
+    <input type="tel" id="customer-phone" required />
 
     <button type="submit">Pay with Crypto</button>
     <button type="button" id="pay-card" class="pay-card-btn">Pay with Card (Visa / MasterCard)</button>
@@ -80,40 +74,40 @@
   <script>
     // Load product info from URL
     const params = new URLSearchParams(window.location.search);
-    const productName = decodeURIComponent(params.get('name') || 'Unknown Product');
-    const productPrice = decodeURIComponent(params.get('price') || '0.00');
+    const productName = decodeURIComponent(params.get("name") || "Unknown Product");
+    const productPrice = decodeURIComponent(params.get("price") || "0.00");
 
-    document.getElementById('product-name').textContent = productName;
-    document.getElementById('product-price').textContent = `$${productPrice}`;
+    document.getElementById("product-name").textContent = productName;
+    document.getElementById("product-price").textContent = `$${productPrice}`;
 
     // NOWPayments (Crypto)
     async function handleCryptoPayment(event) {
       event.preventDefault();
 
-      const name = document.getElementById('customer-name').value;
-      const email = document.getElementById('customer-email').value;
-      const phone = document.getElementById('customer-phone').value;
+      const name = document.getElementById("customer-name").value;
+      const email = document.getElementById("customer-email").value;
+      const phone = document.getElementById("customer-phone").value;
 
-      const apiKey = 'HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN'; // 🛠 Replace with your NOWPayments API key
+      const apiKey = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN"; // 🛠 Replace with your NOWPayments API key
       const orderId = Math.random().toString(36).substring(2, 10);
 
       const data = {
         price_amount: parseFloat(productPrice),
         price_currency: "usd",
-        pay_currency: "btc", // Optional: you can allow user to select or keep as btc
+        pay_currency: "btc", // Optional: allow user select or fix btc
         order_id: orderId,
         order_description: `${productName} for ${name}`,
-        success_url: "https://yourstore.com/success",  // Optional
-        cancel_url: "https://yourstore.com/cancel"     // Optional
+        success_url: "https://yourstore.com/success", // Optional
+        cancel_url: "https://yourstore.com/cancel", // Optional
       };
 
-      const response = await fetch('https://api.nowpayments.io/v1/invoice', {
-        method: 'POST',
+      const response = await fetch("https://api.nowpayments.io/v1/invoice", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
@@ -126,26 +120,34 @@
       }
     }
 
-    // ChangeNOW (Card payment)
-    document.getElementById('pay-card').addEventListener('click', () => {
-      const name = document.getElementById('customer-name').value;
-      const email = document.getElementById('customer-email').value;
-      const phone = document.getElementById('customer-phone').value;
+    // MoonPay (Card payment)
+    document.getElementById("pay-card").addEventListener("click", () => {
+      const name = document.getElementById("customer-name").value;
+      const email = document.getElementById("customer-email").value;
+      const phone = document.getElementById("customer-phone").value;
 
       if (!name || !email || !phone) {
         alert("Please fill out all customer info.");
         return;
       }
 
-      const publicKey = 'e6baaa9b37330e33ca5b4378b5a75c3f202f5bbe3c2201c64fe49ad2ab559435'; // 🛠 Replace with your ChangeNOW public key if available
-      const orderId = Math.random().toString(36).substring(2, 12);
+      // Replace YOUR_WALLET_ADDRESS below with your actual wallet address!
+      const walletAddress = "bc1qasje344q6dxwlr2fap2ay45ppnrjnun3qqq80q";
 
-      // Example URL — confirm with ChangeNOW docs for correct payment link
-      const url = `https://changenow.io/checkout?public_key=${publicKey}&amount=${productPrice}&currency=USD&order_id=${orderId}&customer_email=${encodeURIComponent(email)}&customer_name=${encodeURIComponent(name)}&description=${encodeURIComponent(productName)}`;
+      // We will accept USDT (TRC20) for lower fees, change currencyCode if needed
+      const currencyCode = "usdt";
 
-      window.location.href = url;
+      // Amount from URL param
+      const amount = productPrice;
+
+      // MoonPay URL with pre-filled info (MoonPay handles KYC for buyer)
+      const moonpayUrl = `https://buy.moonpay.com?currencyCode=${currencyCode}&walletAddress=${walletAddress}&baseCurrencyAmount=${amount}`;
+
+      // Open MoonPay payment in new tab
+      window.open(moonpayUrl, "_blank");
     });
   </script>
 </body>
 </html>
+html>
 
