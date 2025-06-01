@@ -38,8 +38,8 @@
       cursor: pointer;
       border-radius: 5px;
     }
-    .card { background-color: #0070f3; }
     .crypto { background-color: #4caf50; }
+    .card { background-color: #2196f3; }
   </style>
 </head>
 <body>
@@ -71,11 +71,31 @@
       Shipping: $<span id="shippingCost">3</span>
     </div>
 
-    <button type="button" class="btn card" onclick="payCard()">Pay with Card</button>
     <button type="button" class="btn crypto" onclick="payCrypto()">Pay with Crypto</button>
+    <button type="button" class="btn card" onclick="payCard()">Pay with Card</button>
   </form>
 
   <script>
+    // Helper to get URL params by name
+    function getParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // Set product details on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const name = getParam('name') || 'Unknown Product';
+      const price = parseFloat(getParam('price')) || 0;
+
+      document.getElementById('productName').textContent = decodeURIComponent(name);
+      document.getElementById('productPrice').textContent = price.toFixed(2);
+
+      // Store these globally for payment functions
+      window.productName = decodeURIComponent(name);
+      window.productPrice = price;
+    });
+
+    // Discount code logic
     const discountInput = document.getElementById("discountCode");
     const shippingCostSpan = document.getElementById("shippingCost");
 
@@ -88,35 +108,26 @@
       }
     });
 
-    // Read product name and price from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const product = urlParams.get('product') || "Unknown Product";
-    const price = urlParams.get('price') || "0.00";
+    // Replace YOUR_NOWPAYMENTS_ID with your real NowPayments ID
+    const nowPaymentsId = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN";
 
-    document.getElementById('productName').textContent = product;
-    document.getElementById('productPrice').textContent = price;
+    // Pay with Crypto button action
+    function payCrypto() {
+      const priceUsd = window.productPrice || 0;
+      const product = window.productName || "Product";
 
-    // You will replace YOUR_NOWPAYMENTS_ID and add your actual payment integration here
-    // NowPayments payment URLs accept query parameters, you need to construct properly
-
-    function payCard() {
-      // Example URL for card payment via NowPayments
-      // You must replace YOUR_NOWPAYMENTS_ID with your actual ID
-      // And pass amount and currency in query parameters
-
-      const amount = parseFloat(price) + parseFloat(shippingCostSpan.textContent);
-      const nowPaymentsId = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN"; // Replace this with your real ID
-
-      // Example URL to initiate payment (modify according to NowPayments API doc)
-      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&amount=${amount.toFixed(2)}&currency=usd&payment_method=card&order_id=${encodeURIComponent(product)}`;
+      // Example NowPayments direct payment URL (adjust as needed)
+      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&price_amount=${priceUsd}&price_currency=usd&pay_currency=btc&order_id=${encodeURIComponent(product)}`;
       window.location.href = url;
     }
 
-    function payCrypto() {
-      const amount = parseFloat(price) + parseFloat(shippingCostSpan.textContent);
-      const nowPaymentsId = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN"; // Replace this with your real ID
+    // Pay with Card button action
+    function payCard() {
+      const priceUsd = window.productPrice || 0;
+      const product = window.productName || "Product";
 
-      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&amount=${amount.toFixed(2)}&currency=usd&payment_method=crypto&order_id=${encodeURIComponent(product)}`;
+      // Example NowPayments card payment (pay_currency=usd, set your parameters)
+      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&price_amount=${priceUsd}&price_currency=usd&pay_currency=usd&order_id=${encodeURIComponent(product)}`;
       window.location.href = url;
     }
   </script>
@@ -124,6 +135,5 @@
 </body>
 </html>
 
-</body>
 </html>
 
