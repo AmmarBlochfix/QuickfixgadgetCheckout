@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Checkout Page</title>
   <style>
     body {
@@ -47,25 +47,25 @@
 
   <h2>Product Checkout</h2>
 
-  <p><strong>Product:</strong> [Add your product name here]</p>
-  <p><strong>Price:</strong> $50.00</p>
+  <p><strong>Product:</strong> <span id="productName">Loading...</span></p>
+  <p><strong>Price:</strong> $<span id="productPrice">0.00</span></p>
 
   <form id="checkoutForm">
     <label>Full Name
-      <input type="text" required>
+      <input type="text" required />
     </label>
     <label>Address
-      <input type="text" required>
+      <input type="text" required />
     </label>
     <label>Postal Code
-      <input type="text" required>
+      <input type="text" required />
     </label>
     <label>Phone Number
-      <input type="text" required>
+      <input type="text" required />
     </label>
 
     <label>Discount Code
-      <input type="text" id="discountCode" placeholder="Enter code">
+      <input type="text" id="discountCode" placeholder="Enter code" />
     </label>
 
     <div class="price-box">
@@ -90,6 +90,14 @@
       }
     });
 
+    // Get product name and price from URL parameters and update page
+    const urlParams = new URLSearchParams(window.location.search);
+    const product = urlParams.get('product') || "Unknown Product";
+    const price = urlParams.get('price') || "0.00";
+
+    document.getElementById('productName').textContent = product;
+    document.getElementById('productPrice').textContent = price;
+
     function payCrypto() {
       window.location.href = "https://nowpayments.io/payment/?iid=YOUR_NOWPAYMENTS_ID";
     }
@@ -105,3 +113,4 @@
 
 </body>
 </html>
+
