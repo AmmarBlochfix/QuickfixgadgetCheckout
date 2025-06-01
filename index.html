@@ -1,37 +1,179 @@
-<script>
-  const nowPaymentsId = "K9WMD43-N4CM7EX-NW99RKB-CDXEF8K";
+<!-- index.html - Checkout Page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Checkout | QuickFixGadget</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    .price-box {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .crypto { background-color: #4caf50; }
+    .card   { background-color: #2196f3; }
+  </style>
+</head>
+<body>
 
-  function payCrypto() {
-    const priceUsd = window.productPrice || 0;
-    const product = window.productName || "Product";
+  <h2>Product Checkout</h2>
 
-    const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}` +
-      `&price_amount=${priceUsd}` +
-      `&price_currency=usd` +
-      `&pay_currency=btc` +    // crypto payment
-      `&order_id=${encodeURIComponent(product)}` +
-      `&success_url=${encodeURIComponent(window.location.origin + "/success.html")}` +
-      `&cancel_url=${encodeURIComponent(window.location.origin + "/cancel.html")}`;
+  <p><strong>Product:</strong> <span id="productName">Loading...</span></p>
+  <p><strong>Price:</strong> $<span id="productPrice">0</span></p>
 
-    window.location.href = url;
-  }
+  <form id="checkoutForm">
+    <label>Full Name
+      <input type="text" required>
+    </label>
+    <label>Address
+      <input type="text" required>
+    </label>
+    <label>Postal Code
+      <input type="text" required>
+    </label>
+    <label>Phone Number
+      <input type="text" required>
+    </label>
 
-  function payCard() {
-    const priceUsd = window.productPrice || 0;
-    const product = window.productName || "Product";
+    <button type="button" class="btn crypto" onclick="payNow('crypto')">Pay with Crypto</button>
+    <button type="button" class="btn card" onclick="payNow('card')">Pay with Card</button>
+  </form>
 
-    const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}` +
-      `&price_amount=${priceUsd}` +
-      `&price_currency=usd` +
-      `&pay_currency=usd` +    // card payment in USD
-      `&order_id=${encodeURIComponent(product)}` +
-      `&success_url=${encodeURIComponent(window.location.origin + "/success.html")}` +
-      `&cancel_url=${encodeURIComponent(window.location.origin + "/cancel.html")}`;
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productName = decodeURIComponent(urlParams.get("name") || "Unknown Product");
+    const productPrice = parseFloat(urlParams.get("price")) || 0;
 
-    window.location.href = url;
-  }
-</script>
+    document.getElementById("productName").textContent = productName;
+    document.getElementById("productPrice").textContent = productPrice.toFixed(2);
 
+    function payNow(method) {
+      const apiKey = "REPLACE_WITH_YOUR_NOWPAYMENTS_API_KEY";
+      const successUrl = "https://ammarblochfix.github.io/QuickfixgadgetCheckout/success.html";
+      const cancelUrl = "https://ammarblochfix.github.io/QuickfixgadgetCheckout/cancel.html";
+      const paymentCurrency = method === "card" ? "usd" : "btc"; // Change crypto as needed
+
+      const data = {
+        price_amount: productPrice,
+        price_currency: "usd",
+        pay_currency: paymentCurrency,
+        order_description: productName,
+        ipn_callback_url: "",
+        success_url: successUrl,
+        cancel_url: cancelUrl
+      };
+
+      fetch("https://api.nowpayments.io/v1/invoice", {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.invoice_url) {
+          window.location.href = res.invoice_url;
+        } else {
+          alert("Failed to create payment. Please try again.");
+        }
+      })
+      .catch(() => {
+        alert("Something went wrong. Please check your internet or API key.");
+      });
+    }
+  </script>
 
 </body>
 </html>
+<!-- success.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment Successful</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+    h1 { color: green; }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #4caf50;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎉 Payment Successful!</h1>
+  <p>Thank you for your purchase. Your order is now being processed.</p>
+  <a href="https://yourshopifystore.com">Return to Store</a>
+</body>
+</html>
+<!-- cancel.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment Cancelled</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+    h1 { color: red; }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #f44336;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>❌ Payment Cancelled</h1>
+  <p>Your payment was not completed. You can try again or contact support.</p>
+  <a href="https://yourshopifystore.com">Return to Store</a>
+</body>
+</html>
+
