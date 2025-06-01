@@ -1,109 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Checkout Page</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-    }
-    h2 {
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-    }
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-    }
-    .btn {
-      margin-top: 20px;
-      padding: 10px;
-      width: 100%;
-      border: none;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .crypto { background-color: #4caf50; }
-    .card { background-color: #2196f3; }
-  </style>
-</head>
-<body>
+<script>
+  const nowPaymentsId = "K9WMD43-N4CM7EX-NW99RKB-CDXEF8K";
 
-  <h2>Product Checkout</h2>
+  function payCrypto() {
+    const priceUsd = window.productPrice || 0;
+    const product = window.productName || "Product";
 
-  <p><strong>Product:</strong> <span id="productName">Loading...</span></p>
-  <p><strong>Price:</strong> $<span id="productPrice">0.00</span></p>
+    const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}` +
+      `&price_amount=${priceUsd}` +
+      `&price_currency=usd` +
+      `&pay_currency=btc` +    // crypto payment
+      `&order_id=${encodeURIComponent(product)}` +
+      `&success_url=${encodeURIComponent(window.location.origin + "/success.html")}` +
+      `&cancel_url=${encodeURIComponent(window.location.origin + "/cancel.html")}`;
 
-  <form id="checkoutForm">
-    <label>Full Name
-      <input type="text" required />
-    </label>
-    <label>Address
-      <input type="text" required />
-    </label>
-    <label>Postal Code
-      <input type="text" required />
-    </label>
-    <label>Phone Number
-      <input type="text" required />
-    </label>
+    window.location.href = url;
+  }
 
-    <button type="button" class="btn crypto" onclick="payCrypto()">Pay with Crypto</button>
-    <button type="button" class="btn card" onclick="payCard()">Pay with Card</button>
-  </form>
+  function payCard() {
+    const priceUsd = window.productPrice || 0;
+    const product = window.productName || "Product";
 
-  <script>
-    // Helper to get URL params by name
-    function getParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param);
-    }
+    const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}` +
+      `&price_amount=${priceUsd}` +
+      `&price_currency=usd` +
+      `&pay_currency=usd` +    // card payment in USD
+      `&order_id=${encodeURIComponent(product)}` +
+      `&success_url=${encodeURIComponent(window.location.origin + "/success.html")}` +
+      `&cancel_url=${encodeURIComponent(window.location.origin + "/cancel.html")}`;
 
-    // Set product details on page load
-    document.addEventListener('DOMContentLoaded', () => {
-      const name = getParam('name') || 'Unknown Product';
-      const price = parseFloat(getParam('price')) || 0;
+    window.location.href = url;
+  }
+</script>
 
-      document.getElementById('productName').textContent = decodeURIComponent(name);
-      document.getElementById('productPrice').textContent = price.toFixed(2);
-
-      // Store these globally for payment functions
-      window.productName = decodeURIComponent(name);
-      window.productPrice = price;
-    });
-
-    // Replace YOUR_NOWPAYMENTS_ID with your real NowPayments ID
-    const nowPaymentsId = "K9WMD43-N4CM7EX-NW99RKB-CDXEF8K";
-
-    // Pay with Crypto button action
-    function payCrypto() {
-      const priceUsd = window.productPrice || 0;
-      const product = window.productName || "Product";
-
-      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&price_amount=${priceUsd}&price_currency=usd&pay_currency=btc&order_id=${encodeURIComponent(product)}`;
-      window.location.href = url;
-    }
-
-    // Pay with Card button action
-    function payCard() {
-      const priceUsd = window.productPrice || 0;
-      const product = window.productName || "Product";
-
-      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&price_amount=${priceUsd}&price_currency=usd&pay_currency=usd&order_id=${encodeURIComponent(product)}`;
-      window.location.href = url;
-    }
-  </script>
 
 </body>
 </html>
