@@ -24,10 +24,6 @@
       padding: 8px;
       margin-top: 5px;
     }
-    .price-box {
-      margin-top: 15px;
-      font-weight: bold;
-    }
     .btn {
       margin-top: 20px;
       padding: 10px;
@@ -63,14 +59,6 @@
       <input type="text" required />
     </label>
 
-    <label>Discount Code
-      <input type="text" id="discountCode" placeholder="Enter code" />
-    </label>
-
-    <div class="price-box">
-      Shipping: $<span id="shippingCost">3</span>
-    </div>
-
     <button type="button" class="btn crypto" onclick="payCrypto()">Pay with Crypto</button>
     <button type="button" class="btn card" onclick="payCard()">Pay with Card</button>
   </form>
@@ -95,19 +83,6 @@
       window.productPrice = price;
     });
 
-    // Discount code logic
-    const discountInput = document.getElementById("discountCode");
-    const shippingCostSpan = document.getElementById("shippingCost");
-
-    discountInput.addEventListener("input", () => {
-      const code = discountInput.value.trim().toUpperCase();
-      if (code === "MYSHIPPING") {
-        shippingCostSpan.textContent = "0";
-      } else {
-        shippingCostSpan.textContent = "3";
-      }
-    });
-
     // Replace YOUR_NOWPAYMENTS_ID with your real NowPayments ID
     const nowPaymentsId = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN";
 
@@ -116,7 +91,6 @@
       const priceUsd = window.productPrice || 0;
       const product = window.productName || "Product";
 
-      // Example NowPayments direct payment URL (adjust as needed)
       const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&price_amount=${priceUsd}&price_currency=usd&pay_currency=btc&order_id=${encodeURIComponent(product)}`;
       window.location.href = url;
     }
@@ -126,7 +100,6 @@
       const priceUsd = window.productPrice || 0;
       const product = window.productName || "Product";
 
-      // Example NowPayments card payment (pay_currency=usd, set your parameters)
       const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&price_amount=${priceUsd}&price_currency=usd&pay_currency=usd&order_id=${encodeURIComponent(product)}`;
       window.location.href = url;
     }
@@ -134,6 +107,3 @@
 
 </body>
 </html>
-
-</html>
-
