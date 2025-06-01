@@ -1,9 +1,8 @@
-<!-- index.html - Checkout Page -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Checkout | QuickFixGadget</title>
+  <meta charset="UTF-8">
+  <title>Checkout Page</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -40,7 +39,7 @@
       border-radius: 5px;
     }
     .crypto { background-color: #4caf50; }
-    .card   { background-color: #2196f3; }
+    .card { background-color: #2196f3; }
   </style>
 </head>
 <body>
@@ -64,56 +63,43 @@
       <input type="text" required>
     </label>
 
-    <button type="button" class="btn crypto" onclick="payNow('crypto')">Pay with Crypto</button>
-    <button type="button" class="btn card" onclick="payNow('card')">Pay with Card</button>
+    <button type="button" class="btn crypto" onclick="payCrypto()">Pay with Crypto</button>
+    <button type="button" class="btn card" onclick="payCard()">Pay with Card</button>
   </form>
 
   <script>
+    // Get product info from URL
     const urlParams = new URLSearchParams(window.location.search);
-    const productName = decodeURIComponent(urlParams.get("name") || "Unknown Product");
-    const productPrice = parseFloat(urlParams.get("price")) || 0;
+    const productName = decodeURIComponent(urlParams.get('name') || 'Unnamed Product');
+    const productPrice = parseFloat(urlParams.get('price') || '0').toFixed(2);
 
-    document.getElementById("productName").textContent = productName;
-    document.getElementById("productPrice").textContent = productPrice.toFixed(2);
+    document.getElementById('productName').textContent = productName;
+    document.getElementById('productPrice').textContent = productPrice;
 
-    function payNow(method) {
-      const apiKey = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN";
-      const successUrl = "https://ammarblochfix.github.io/QuickfixgadgetCheckout/success.html";
-      const cancelUrl = "https://ammarblochfix.github.io/QuickfixgadgetCheckout/cancel.html";
-      const paymentCurrency = method === "card" ? "usd" : "btc"; // Change crypto as needed
+    const nowPaymentsId = "K9WMD43-N4CM7EX-NW99RKB-CDXEF8K"; // Replace with your NowPayments Integration ID
 
-      const data = {
-        price_amount: productPrice,
-        price_currency: "usd",
-        pay_currency: paymentCurrency,
-        order_description: productName,
-        ipn_callback_url: "",
-        success_url: successUrl,
-        cancel_url: cancelUrl
-      };
+    function payCrypto() {
+      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}` +
+        `&price_amount=${productPrice}` +
+        `&price_currency=usd` +
+        `&pay_currency=btc` +
+        `&order_id=${encodeURIComponent(productName)}` +
+        `&success_url=${encodeURIComponent(window.location.origin + "/success.html")}` +
+        `&cancel_url=${encodeURIComponent(window.location.origin + "/cancel.html")}`;
+      window.location.href = url;
+    }
 
-      fetch("https://api.nowpayments.io/v1/invoice", {
-        method: "POST",
-        headers: {
-          "x-api-key": apiKey,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res && res.invoice_url) {
-          window.location.href = res.invoice_url;
-        } else {
-          alert("Failed to create payment. Please try again.");
-        }
-      })
-      .catch(() => {
-        alert("Something went wrong. Please check your internet or API key.");
-      });
+    function payCard() {
+      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}` +
+        `&price_amount=${productPrice}` +
+        `&price_currency=usd` +
+        `&pay_currency=usd` +
+        `&order_id=${encodeURIComponent(productName)}` +
+        `&success_url=${encodeURIComponent(window.location.origin + "/success.html")}` +
+        `&cancel_url=${encodeURIComponent(window.location.origin + "/cancel.html")}`;
+      window.location.href = url;
     }
   </script>
 
 </body>
 </html>
-<!-- success.html -->
