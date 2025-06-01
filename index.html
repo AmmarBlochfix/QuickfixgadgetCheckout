@@ -19,7 +19,7 @@
       display: block;
       margin-top: 15px;
     }
-    input, select {
+    input {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -38,9 +38,8 @@
       cursor: pointer;
       border-radius: 5px;
     }
+    .card { background-color: #0070f3; }
     .crypto { background-color: #4caf50; }
-    .blik { background-color: #2196f3; }
-    .sepa { background-color: #ff9800; }
   </style>
 </head>
 <body>
@@ -72,9 +71,8 @@
       Shipping: $<span id="shippingCost">3</span>
     </div>
 
+    <button type="button" class="btn card" onclick="payCard()">Pay with Card</button>
     <button type="button" class="btn crypto" onclick="payCrypto()">Pay with Crypto</button>
-    <button type="button" class="btn blik" onclick="payBlik()">Pay with BLIK</button>
-    <button type="button" class="btn sepa" onclick="paySepa()">Pay with SEPA / Apple Pay / Google Pay</button>
   </form>
 
   <script>
@@ -90,7 +88,7 @@
       }
     });
 
-    // Get product name and price from URL parameters and update page
+    // Read product name and price from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const product = urlParams.get('product') || "Unknown Product";
     const price = urlParams.get('price') || "0.00";
@@ -98,18 +96,33 @@
     document.getElementById('productName').textContent = product;
     document.getElementById('productPrice').textContent = price;
 
+    // You will replace YOUR_NOWPAYMENTS_ID and add your actual payment integration here
+    // NowPayments payment URLs accept query parameters, you need to construct properly
+
+    function payCard() {
+      // Example URL for card payment via NowPayments
+      // You must replace YOUR_NOWPAYMENTS_ID with your actual ID
+      // And pass amount and currency in query parameters
+
+      const amount = parseFloat(price) + parseFloat(shippingCostSpan.textContent);
+      const nowPaymentsId = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN"; // Replace this with your real ID
+
+      // Example URL to initiate payment (modify according to NowPayments API doc)
+      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&amount=${amount.toFixed(2)}&currency=usd&payment_method=card&order_id=${encodeURIComponent(product)}`;
+      window.location.href = url;
+    }
+
     function payCrypto() {
-      window.location.href = "https://nowpayments.io/payment/?iid=YOUR_NOWPAYMENTS_ID";
-    }
+      const amount = parseFloat(price) + parseFloat(shippingCostSpan.textContent);
+      const nowPaymentsId = "HDYTMWE-Z5SMWXD-J0PK6E1-38VQ6QN"; // Replace this with your real ID
 
-    function payBlik() {
-      window.location.href = "https://jeton.com"; // Replace with your Jeton payment link or redirect
-    }
-
-    function paySepa() {
-      window.location.href = "https://payop.com"; // Replace with your PayOp payment link or redirect
+      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}&amount=${amount.toFixed(2)}&currency=usd&payment_method=crypto&order_id=${encodeURIComponent(product)}`;
+      window.location.href = url;
     }
   </script>
+
+</body>
+</html>
 
 </body>
 </html>
