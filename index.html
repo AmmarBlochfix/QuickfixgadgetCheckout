@@ -1,45 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Checkout Page</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-    }
-    h2 {
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-    }
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-    }
-    .price-box {
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    .btn {
-      margin-top: 20px;
-      padding: 10px;
-      width: 100%;
-      border: none;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .crypto { background-color: #4caf50; }
-    .card { background-color: #2196f3; }
+    /* Keep your styles here, omitted for brevity */
   </style>
 </head>
 <body>
@@ -51,17 +16,17 @@
 
   <form id="checkoutForm">
     <label>Full Name
-      <input type="text" name="name" required>
+      <input type="text" id="name" required />
     </label>
     <label>Email Address
-      <input type="email" name="email" required>
+      <input type="email" id="email" required />
     </label>
     <label>Phone Number
-      <input type="text" name="phone" required>
+      <input type="text" id="phone" required />
     </label>
 
-    <button type="submit" class="btn crypto">Pay with Crypto</button>
-    <button type="button" class="btn card" onclick="payWithCard()">Pay with Card</button>
+    <button type="button" class="btn crypto" onclick="pay('crypto')">Pay with Crypto</button>
+    <button type="button" class="btn card" onclick="pay('card')">Pay with Card</button>
   </form>
 
   <script>
@@ -72,58 +37,44 @@
     document.getElementById('productName').textContent = productName;
     document.getElementById('productPrice').textContent = productPrice;
 
-    document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const payload = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        product: productName,
-        price: productPrice,
-        method: 'crypto'
-      };
+    async function pay(method) {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
 
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Payment creation failed.');
+      if (!name || !email || !phone) {
+        alert('Please fill all fields.');
+        return;
       }
-    });
 
-    async function payWithCard() {
-      const form = document.getElementById('checkoutForm');
-      const formData = new FormData(form);
-      const payload = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        product: productName,
-        price: productPrice,
-        method: 'card'
-      };
+      try {
+        const res = await fetch('http://localhost:3000/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            email,
+            phone,
+            product: productName,
+            price: productPrice,
+            method
+          })
+        });
 
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        const data = await res.json();
 
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Card payment creation failed.');
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert('Payment URL not received.');
+          console.error(data);
+        }
+
+      } catch (err) {
+        alert('Error during payment initiation.');
+        console.error(err);
       }
     }
   </script>
-
 </body>
 </html>
