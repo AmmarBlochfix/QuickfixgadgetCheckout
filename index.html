@@ -1,80 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Checkout Page</title>
-  <style>
-    /* Keep your styles here, omitted for brevity */
-  </style>
-</head>
-<body>
+app.post('/api/checkout', async (req, res) => {
+  const { name, email, phone, product, price, method } = req.body;
+  console.log('Received checkout request:', req.body);
 
-  <h2>Product Checkout</h2>
+  try {
+    await sendEmail(name, email, phone, product, method);
 
-  <p><strong>Product:</strong> <span id="productName">Loading...</span></p>
-  <p><strong>Price:</strong> $<span id="productPrice">0</span></p>
-
-  <form id="checkoutForm">
-    <label>Full Name
-      <input type="text" id="name" required />
-    </label>
-    <label>Email Address
-      <input type="email" id="email" required />
-    </label>
-    <label>Phone Number
-      <input type="text" id="phone" required />
-    </label>
-
-    <button type="button" class="btn crypto" onclick="pay('crypto')">Pay with Crypto</button>
-    <button type="button" class="btn card" onclick="pay('card')">Pay with Card</button>
-  </form>
-
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const productName = decodeURIComponent(urlParams.get('name') || 'Unnamed Product');
-    const productPrice = parseFloat(urlParams.get('price') || '0').toFixed(2);
-
-    document.getElementById('productName').textContent = productName;
-    document.getElementById('productPrice').textContent = productPrice;
-
-    async function pay(method) {
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-
-      if (!name || !email || !phone) {
-        alert('Please fill all fields.');
-        return;
-      }
-
-      try {
-        const res = await fetch('http://localhost:3000/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            email,
-            phone,
-            product: productName,
-            price: productPrice,
-            method
-          })
-        });
-
-        const data = await res.json();
-
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          alert('Payment URL not received.');
-          console.error(data);
+    if (method === 'crypto') {
+      const response = await axios.post('https://api.nowpayments.io/v1/invoice', {
+        price_amount: price,
+        price_currency: 'usd',
+        pay_currency: 'btc',
+        order_id: product,
+        order_description: `Order for ${product}`,
+        success_url: 'https://yourdomain.com/success.html',
+        cancel_url: 'https://yourdomain.com/cancel.html'
+      }, {
+        headers: {
+          'x-api-key': process.env.NOWPAYMENTS_API_KEY,
+          'Content-Type': 'application/json'
         }
+      });
 
-      } catch (err) {
-        alert('Error during payment initiation.');
-        console.error(err);
-      }
+      console.log('NowPayments invoice response:', response.data);
+      return res.json({ url: response.data.invoice_url });
+
+    } else if (method === 'card') {
+      const gardarianUrl = `https://widget.gardarian.com/payment?amount=${price}&fiat_type=usd&crypto=btc&email=${encodeURIComponent(email)}`;
+      console.log('Card payment URL:', gardarianUrl);
+      return res.json({ url: gardarianUrl });
     }
-  </script>
-</body>
-</html>
+
+    res.status(400).json({ error: 'Invalid method' });
+
+  } catch (err) {
+    console.error('Error in /api/checkout:', err.message);
+    res.status(500).json({ error: 'Payment error' });
+  }
+});
+
