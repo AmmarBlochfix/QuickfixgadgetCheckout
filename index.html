@@ -109,14 +109,19 @@
   <div id="message"></div>
 
   <script>
-    // Parse URL parameters
+    // Parse URL parameters (robust, handles '+' as spaces)
     function getQueryParams() {
       const params = {};
       const queryString = window.location.search.substring(1);
+      if (!queryString) return params;
+
       queryString.split('&').forEach(pair => {
         if (!pair) return;
-        const [key, value] = pair.split('=').map(decodeURIComponent);
-        params[key] = value;
+        const [key, value] = pair.split('=');
+        if (key && value) {
+          // decodeURIComponent does NOT convert '+' to space, so replace '+' manually first
+          params[key] = decodeURIComponent(value.replace(/\+/g, ' '));
+        }
       });
       return params;
     }
@@ -129,9 +134,16 @@
 
     if (params.name && params.price) {
       productInput.value = params.name;
-      priceInput.value = params.price;
-
-      productInfo.textContent = `You're purchasing: "${params.name}" for $${Number(params.price).toFixed(2)}`;
+      
+      // Convert price to float and validate
+      const priceNumber = parseFloat(params.price);
+      if (isNaN(priceNumber)) {
+        productInfo.textContent = 'Invalid price detected. Please go back and select a product.';
+        productInfo.style.color = 'red';
+      } else {
+        priceInput.value = priceNumber.toFixed(2);
+        productInfo.textContent = `You're purchasing: "${params.name}" for $${priceInput.value}`;
+      }
     } else {
       productInfo.textContent = 'Product information is missing! Please go back and select a product.';
       productInfo.style.color = 'red';
@@ -148,18 +160,19 @@
         email: document.getElementById('email').value.trim(),
         phone: document.getElementById('phone').value.trim(),
         product: productInput.value,
-        price: Number(priceInput.value),
+        price: parseFloat(priceInput.value),
         method: document.getElementById('method').value,
       };
 
-      if (!data.name || !data.email || !data.phone || !data.product || !data.price || !data.method) {
-        message.textContent = 'Please fill out all required fields.';
+      // Fix: Check price properly for NaN
+      if (!data.name || !data.email || !data.phone || !data.product || isNaN(data.price) || !data.method) {
+        message.textContent = 'Please fill out all required fields correctly.';
         message.className = 'error';
         return;
       }
 
       try {
-        const response = await fetch('https://ammarblochfix.github.io/QuickfixgadgetCheckout/index.html', {
+        const response = await fetch('https://my-checkout-backend.onrender.com/api/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
@@ -185,4 +198,5 @@
   </script>
 </body>
 </html>
+
 
