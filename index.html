@@ -51,24 +51,20 @@
 
   <form id="checkoutForm">
     <label>Full Name
-      <input type="text" required>
+      <input type="text" name="name" required>
     </label>
-    <label>Address
-      <input type="text" required>
-    </label>
-    <label>Postal Code
-      <input type="text" required>
+    <label>Email Address
+      <input type="email" name="email" required>
     </label>
     <label>Phone Number
-      <input type="text" required>
+      <input type="text" name="phone" required>
     </label>
 
-    <button type="button" class="btn crypto" onclick="payCrypto()">Pay with Crypto</button>
-    <button type="button" class="btn card" onclick="payCard()">Pay with Card</button>
+    <button type="submit" class="btn crypto">Pay with Crypto</button>
+    <button type="button" class="btn card" onclick="payWithCard()">Pay with Card</button>
   </form>
 
   <script>
-    // Get product info from URL
     const urlParams = new URLSearchParams(window.location.search);
     const productName = decodeURIComponent(urlParams.get('name') || 'Unnamed Product');
     const productPrice = parseFloat(urlParams.get('price') || '0').toFixed(2);
@@ -76,28 +72,56 @@
     document.getElementById('productName').textContent = productName;
     document.getElementById('productPrice').textContent = productPrice;
 
-    const nowPaymentsId = "K9WMD43-N4CM7EX-NW99RKB-CDXEF8K"; // Replace with your NowPayments Integration ID
+    document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const payload = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        product: productName,
+        price: productPrice,
+        method: 'crypto'
+      };
 
-    function payCrypto() {
-      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}` +
-        `&price_amount=${productPrice}` +
-        `&price_currency=usd` +
-        `&pay_currency=btc` +
-        `&order_id=${encodeURIComponent(productName)}` +
-        `&success_url=${encodeURIComponent(window.location.origin + "/success.html")}` +
-        `&cancel_url=${encodeURIComponent(window.location.origin + "/cancel.html")}`;
-      window.location.href = url;
-    }
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    function payCard() {
-      const url = `https://nowpayments.io/payment/?iid=${nowPaymentsId}` +
-        `&price_amount=${productPrice}` +
-        `&price_currency=usd` +
-        `&pay_currency=usd` +
-        `&order_id=${encodeURIComponent(productName)}` +
-        `&success_url=${encodeURIComponent(window.location.origin + "/success.html")}` +
-        `&cancel_url=${encodeURIComponent(window.location.origin + "/cancel.html")}`;
-      window.location.href = url;
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Payment creation failed.');
+      }
+    });
+
+    async function payWithCard() {
+      const form = document.getElementById('checkoutForm');
+      const formData = new FormData(form);
+      const payload = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        product: productName,
+        price: productPrice,
+        method: 'card'
+      };
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Card payment creation failed.');
+      }
     }
   </script>
 
